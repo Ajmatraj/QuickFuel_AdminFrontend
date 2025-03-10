@@ -1,8 +1,8 @@
 import React from 'react'
-import Index from './(main)/page';
+import HomePage from './(main)/page';
 
 export default function Home() {
   return (
-  < Index/>
+  <HomePage/>
   );
 }

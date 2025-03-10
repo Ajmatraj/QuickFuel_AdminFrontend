@@ -4,6 +4,7 @@ import axios from "axios";
 import { useRouter } from 'next/navigation';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import Link from "next/link";
 
 const LoginForm = () => {
   const [email, setEmail] = useState("");
@@ -25,23 +26,22 @@ const LoginForm = () => {
       });
 
       // If login is successful, store the tokens (access token, refresh token) and role
-      const { accessToken, refreshToken, role } = response.data.data;
+      const { accessToken, refreshToken, role ,userDetails } = response.data.data;
 
       localStorage.setItem("accessToken", accessToken); // Store access token in localStorage
       localStorage.setItem("refreshToken", refreshToken); // Store refresh token in localStorage
       localStorage.setItem("role", role); // Store user role in localStorage
-      console.log(localStorage.getItem("refreshToken"));
+      localStorage.setItem("userDetails", JSON.stringify(userDetails)); // Store user role in localStorage
 
       // Show success message
       toast.success("Login successful! Redirecting...");
      
-      // Redirect to homepage with success message
-      router.push('/?message=Login%20successful!');
-      
-      // Navigate to the appropriate page based on the user's role
+      // Redirect to the appropriate page based on the user's role
       if (role === "admin") {
-        router.push("/admin-dashboard"); // Redirect to admin dashboard
-      } else if (role === "user") {
+        router.push("/admin"); // Redirect to admin dashboard
+      } else if (role === "user" || "fuelstation") {
+        router.push("/"); // Redirect to user dashboard 
+      }else if (role === "fuelstation") {
         router.push("/"); // Redirect to user dashboard
       } else {
         router.push("/"); // Redirect to default homepage if role is undefined
@@ -50,33 +50,38 @@ const LoginForm = () => {
       setLoading(false); // Hide loading indicator once request completes
 
       // Handle error
+      let errorMsg = "An unexpected error occurred.";
       if (axios.isAxiosError(error)) {
         const status = error.response?.status;
-        const message = error.response?.data?.message || "An unexpected error occurred.";
+        const message = error.response?.data?.message || errorMsg;
 
         // Handle different error statuses
         if (status === 400) {
-          setErrorMessage("Invalid email or password. Please try again.");
+          errorMsg = "Invalid email or password. Please try again.";
         } else if (status === 401) {
-          setErrorMessage("Unauthorized. Please check your credentials.");
+          errorMsg = "Unauthorized. Please check your credentials.";
         } else if (status === 500) {
-          setErrorMessage("Server error. Please try again later.");
+          errorMsg = "Server error. Please try again later.";
         } else {
-          setErrorMessage(message); // Generic message for other status codes
+          errorMsg = message; // Generic message for other status codes
         }
       } else if ((error as any).request) {
         // Handle network errors (no response from server)
-        setErrorMessage("Network error. Please check your internet connection.");
+        errorMsg = "Network error. Please check your internet connection.";
       } else {
         // Handle other types of errors (request setup, etc.)
-        setErrorMessage("Login failed. Please try again.");
+        errorMsg = "Login failed. Please try again.";
       }
-      toast.error(errorMessage);
+
+      // Set error message in state
+      setErrorMessage(errorMsg);
+
+      // Display error using react-toastify
+      toast.error(errorMsg);
     } finally {
       setLoading(false);
     }
   };
-
   return (
     <>
     <ToastContainer />
@@ -142,6 +147,12 @@ const LoginForm = () => {
               </span>
             </button>
             </form>
+             <p className="mt-6 text-xs text-gray-600 text-center">
+                          I don't have an account - 
+                          <Link href="/register" className="border-b border-gray-500 border-dotted text-indigo-500">
+                             Sign Up
+                          </Link>
+                        </p>
             <p className="mt-6 text-xs text-gray-600 text-center">
               I agree to abide by templatana's
               <a href="#" className="border-b border-gray-500 border-dotted">

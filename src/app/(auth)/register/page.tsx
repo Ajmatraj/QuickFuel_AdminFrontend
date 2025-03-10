@@ -164,8 +164,8 @@ function Page() {
              className="w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white mt-5">
             <option value="" disabled>Select a role</option>
               <option value="user">User</option>
-              <option value="Rider">Rider</option>
-              <option value="Fuel Station">Fuel Station</option>
+              <option value="rider">Rider</option>
+              <option value="fuelstation">Fuel Station</option>
             </select>
           
             <button type='submit'
