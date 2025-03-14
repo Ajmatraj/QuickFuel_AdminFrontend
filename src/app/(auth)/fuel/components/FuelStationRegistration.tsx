@@ -428,7 +428,7 @@ export default function RegisterFuelStationPage() {
                     </div>
                   </div>
                 ))}
-                <Button variant="outline" className="mt-4" onClick={handleAddFuelType}>
+                <Button variant="outline" className="mt-4 mb-5" onClick={handleAddFuelType}>
                   <Plus className="h-4 w-4" />
                   Add Fuel Type
                 </Button>

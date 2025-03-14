@@ -42,7 +42,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
       <nav>
         <ul>
           <li className="mb-4">
-            <Link href="/" className="flex items-center space-x-2 p-2 rounded hover:bg-gray-700">
+            <Link href="/admin" className="flex items-center space-x-2 p-2 rounded hover:bg-gray-700">
               <Home className="h-5 w-5" />
               <span>Dashboard</span>
             </Link>
@@ -54,9 +54,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
             </Link>
           </li>
           <li className="mb-4">
-            <Link href="/products" className="flex items-center space-x-2 p-2 rounded hover:bg-gray-700">
+            <Link href="/admin/fuelstation" className="flex items-center space-x-2 p-2 rounded hover:bg-gray-700">
               <ShoppingCart className="h-5 w-5" />
-              <span>Products</span>
+              <span>Add Fuel Station</span>
             </Link>
           </li>
           <li className="mb-4">

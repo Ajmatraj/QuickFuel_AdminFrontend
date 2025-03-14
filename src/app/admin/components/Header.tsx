@@ -1,6 +1,6 @@
 import React from 'react';
 import { Search, Bell, User, Menu, HomeIcon } from 'lucide-react';
-import { redirect } from 'next/navigation'
+import { redirect, useRouter } from 'next/navigation'
 
 interface HeaderProps {
   toggleSidebar: () => void;
@@ -9,7 +9,7 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ toggleSidebar }) => {
 
-
+const router = useRouter();
 
   return (
     <header className="bg-white shadow-md p-4 flex justify-between items-center">
@@ -35,7 +35,7 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar }) => {
         <button className="p-2 text-gray-500 hover:text-gray-700">
           <Bell className="h-5 w-5" />
         </button>
-        <button className="p-2 text-gray-500 hover:text-gray-700">
+        <button onClick={() => redirect('/admin/profile')} className="p-2 text-gray-500 hover:text-gray-700">
           <User className="h-5 w-5" />
         </button>
       </div>
