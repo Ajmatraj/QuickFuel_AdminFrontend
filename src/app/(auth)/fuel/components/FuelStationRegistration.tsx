@@ -406,7 +406,7 @@ export default function RegisterFuelStationPage() {
                     <div className="flex space-x-4">
                       <Input
                         value={fuelType.name}
-                        onChange={(e) => handleFuelTypeChange(index, "name", e.target.value)}
+                        onChange={(e) => handleFuelTypeChange(index, "name", e.target.value.toLocaleLowerCase())}
                         placeholder="Fuel Type Name"
                         required
                       />

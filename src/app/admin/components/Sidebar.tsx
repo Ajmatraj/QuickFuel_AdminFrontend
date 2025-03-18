@@ -48,9 +48,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
             </Link>
           </li>
           <li className="mb-4">
-            <Link href="/users" className="flex items-center space-x-2 p-2 rounded hover:bg-gray-700">
+            <Link href="/admin/ordersdetails" className="flex items-center space-x-2 p-2 rounded hover:bg-gray-700">
               <Users className="h-5 w-5" />
-              <span>Users</span>
+              <span>Orders Details</span>
             </Link>
           </li>
           <li className="mb-4">
@@ -60,9 +60,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
             </Link>
           </li>
           <li className="mb-4">
-            <Link href="/analytics" className="flex items-center space-x-2 p-2 rounded hover:bg-gray-700">
+            <Link href="/admin/update" className="flex items-center space-x-2 p-2 rounded hover:bg-gray-700">
               <BarChart2 className="h-5 w-5" />
-              <span>Analytics</span>
+              <span>update</span>
             </Link>
           </li>
           <li className="mb-4">

@@ -448,7 +448,7 @@ export default function ProfilePage() {
                     <div>
                       <h3 className="text-lg font-medium">Orders</h3>
                       <Separator className="my-2" />
-                      {userData.orders.length > 0 ? (
+                      {userData.orders?.length > 0 ? (
                         <div className="space-y-2">
                           {userData.orders.map((order, index) => (
                             <div key={index} className="flex items-center gap-2">
@@ -465,7 +465,7 @@ export default function ProfilePage() {
                     <div>
                       <h3 className="text-lg font-medium">Ratings Given</h3>
                       <Separator className="my-2" />
-                      {userData.ratingGiven.length > 0 ? (
+                      {userData.ratingGiven?.length > 0 ? (
                         <div className="space-y-2">
                           {userData.ratingGiven.map((rating, index) => (
                             <div key={index} className="flex items-center gap-2">
@@ -492,15 +492,15 @@ export default function ProfilePage() {
                 <CardContent>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div className="bg-muted rounded-lg p-4 text-center">
-                      <h3 className="text-3xl font-bold">{userData.orders.length}</h3>
+                      <h3 className="text-3xl font-bold">{userData.orders?.length || 0}</h3>
                       <p className="text-muted-foreground">Orders</p>
                     </div>
                     <div className="bg-muted rounded-lg p-4 text-center">
-                      <h3 className="text-3xl font-bold">{userData.ratingGiven.length}</h3>
+                      <h3 className="text-3xl font-bold">{userData.ratingGiven?.length || 0}</h3>
                       <p className="text-muted-foreground">Ratings Given</p>
                     </div>
                     <div className="bg-muted rounded-lg p-4 text-center">
-                      <h3 className="text-3xl font-bold">{userData.ratingRecived.length}</h3>
+                      <h3 className="text-3xl font-bold">{userData.ratingRecived?.length || 0}</h3>
                       <p className="text-muted-foreground">Ratings Received</p>
                     </div>
                   </div>

@@ -9,7 +9,8 @@ import axios from "axios"
 import Image from "next/image"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { MapPin, Fuel, Phone, Mail, Check, AlertCircle } from "lucide-react"
+import { MapPin, Fuel, Phone, Mail, Check, AlertCircle, User } from "lucide-react"
+import { Skeleton } from "@/components/ui/skeleton"
 
 const DashboardPage = () => {
   // Define allowed roles
@@ -54,16 +55,12 @@ const DashboardPage = () => {
     }
   }, [userDetails])
 
-  const handleSelectFuelStation = (stationId: string) => {
-    router.push(`admin/station/${stationId}`)
+  const handleSelectFuelStation = (stationId) => {
+    router.push(`/admin/station/${stationId}`)
   }
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex justify-center items-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-      </div>
-    )
+    return <LoadingState />
   }
 
   // If the user is not authenticated, redirect to login
@@ -79,7 +76,7 @@ const DashboardPage = () => {
         <div className="container mx-auto px-4 py-8">
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
             {/* User Profile Card */}
-            <Card className="lg:col-span-1">
+            <Card className="lg:col-span-1 h-fit">
               <CardHeader>
                 <CardTitle>User Profile</CardTitle>
                 <CardDescription>Your account information</CardDescription>
@@ -87,13 +84,11 @@ const DashboardPage = () => {
               <CardContent className="space-y-4">
                 <div className="flex items-center space-x-2">
                   <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-                    <span className="text-primary font-bold text-lg">
-                      {userDetails?.Username?.charAt(0).toUpperCase() || "U"}
-                    </span>
+                    <User className="h-6 w-6 text-primary" />
                   </div>
                   <div>
                     <p className="font-medium">{userDetails?.Username}</p>
-                    <p className="text-sm text-muted-foreground">{userDetails?.role}</p>
+                    <p className="text-sm text-muted-foreground capitalize">{userDetails?.role}</p>
                   </div>
                 </div>
                 <div className="space-y-2">
@@ -109,12 +104,11 @@ const DashboardPage = () => {
             <div className="lg:col-span-3">
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold">Your Fuel Stations</h2>
+                <Button onClick={() => router.push("/admin/add-station")}>Add New Station</Button>
               </div>
 
               {loadingFuelStations ? (
-                <div className="flex justify-center items-center h-64">
-                  <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-                </div>
+                <FuelStationsLoadingState />
               ) : error ? (
                 <Card className="border-red-200 bg-red-50">
                   <CardContent className="pt-6">
@@ -191,6 +185,9 @@ const DashboardPage = () => {
                           <Fuel className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                           <h3 className="text-lg font-medium mb-2">No fuel stations found</h3>
                           <p className="text-muted-foreground">You don't have any fuel stations registered yet.</p>
+                          <Button className="mt-4" onClick={() => router.push("/admin/add-station")}>
+                            Add Your First Station
+                          </Button>
                         </div>
                       </CardContent>
                     </Card>
@@ -204,6 +201,39 @@ const DashboardPage = () => {
     </>
   )
 }
+
+// Loading state component
+const LoadingState = () => (
+  <div className="min-h-screen flex justify-center items-center">
+    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+  </div>
+)
+
+// Fuel stations loading state
+const FuelStationsLoadingState = () => (
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    {[1, 2].map((item) => (
+      <Card key={item} className="overflow-hidden">
+        <div className="h-48 w-full">
+          <Skeleton className="h-full w-full" />
+        </div>
+        <CardHeader>
+          <Skeleton className="h-6 w-3/4 mb-2" />
+          <Skeleton className="h-4 w-1/2" />
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-2/3" />
+          </div>
+        </CardContent>
+        <CardFooter>
+          <Skeleton className="h-10 w-full" />
+        </CardFooter>
+      </Card>
+    ))}
+  </div>
+)
 
 export default DashboardPage
 

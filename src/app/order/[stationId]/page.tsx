@@ -6,11 +6,10 @@ import { useEffect, useState } from "react"
 import { useRouter, useParams } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Separator } from "@/components/ui/separator"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { ArrowLeft, MapPin, Droplet, ShoppingCart, Check, AlertCircle, Truck, CreditCard } from "lucide-react"
+import { ArrowLeft, MapPin, ShoppingCart, AlertCircle } from "lucide-react"
 import Link from "next/link"
 
 interface FuelType {
@@ -22,16 +21,15 @@ interface FuelType {
 
 interface FuelStation {
   _id: string
-  imageurl?: string
   name: string
-  stock: string
-  email?: string
-  phone?: string
   location: string
   fuelTypes: FuelType[]
-  createdAt: string
-  updatedAt: string
-  user: string
+}
+
+interface DeliveryAddress {
+  latitude: number
+  longitude: number
+  address: string
 }
 
 export default function OrderPage() {
@@ -41,11 +39,21 @@ export default function OrderPage() {
   const [fuelStation, setFuelStation] = useState<FuelStation | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-
   const [selectedFuelId, setSelectedFuelId] = useState<string>("")
   const [orderQuantity, setOrderQuantity] = useState<number>(1)
   const [totalPrice, setTotalPrice] = useState<number>(0)
 
+  // Updated delivery address to match required structure
+  const [deliveryAddress, setDeliveryAddress] = useState<DeliveryAddress>({
+    latitude: 0,
+    longitude: 0,
+    address: "",
+  })
+
+  const [phone, setPhone] = useState<string>("")
+  const [deliveryDate, setDeliveryDate] = useState<string>("")
+
+  // Fetch fuel station data
   useEffect(() => {
     if (!stationId) {
       setError("Invalid fuel station ID.")
@@ -56,7 +64,6 @@ export default function OrderPage() {
     const fetchFuelStation = async () => {
       try {
         const res = await fetch(`http://localhost:8000/api/v1/fuelstations/stationbyid/${stationId}`)
-
         if (!res.ok) {
           throw new Error(`Error ${res.status}: ${res.statusText}`)
         }
@@ -69,9 +76,8 @@ export default function OrderPage() {
         setFuelStation(data.data)
 
         // Set the first fuel type as default if available
-        if (data.data.fuelTypes && data.data.fuelTypes.length > 0) {
+        if (data.data.fuelTypes.length > 0) {
           setSelectedFuelId(data.data.fuelTypes[0]._id)
-          setTotalPrice(data.data.fuelTypes[0].price * orderQuantity)
         }
       } catch (err) {
         if (err instanceof Error) {
@@ -87,7 +93,7 @@ export default function OrderPage() {
     fetchFuelStation()
   }, [stationId])
 
-  // Update total price when fuel type or quantity changes
+  // Update total price based on selected fuel and quantity
   useEffect(() => {
     if (fuelStation && selectedFuelId) {
       const selectedFuel = fuelStation.fuelTypes.find((fuel) => fuel._id === selectedFuelId)
@@ -107,11 +113,126 @@ export default function OrderPage() {
     }
   }
 
-  const handleSubmitOrder = () => {
-    // Here you would implement the actual order submission logic
-    // For now, we'll just show an alert and redirect
-    alert(`Order placed successfully! Total: ₹${totalPrice.toFixed(2)}`)
-    router.push(`/`)
+  // Handle address field changes
+  const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setDeliveryAddress({
+      ...deliveryAddress,
+      address: e.target.value,
+    })
+  }
+
+  // Handle latitude change
+  const handleLatitudeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = Number.parseFloat(e.target.value)
+    if (!isNaN(value)) {
+      setDeliveryAddress({
+        ...deliveryAddress,
+        latitude: value,
+      })
+    }
+  }
+
+  // Handle longitude change
+  const handleLongitudeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = Number.parseFloat(e.target.value)
+    if (!isNaN(value)) {
+      setDeliveryAddress({
+        ...deliveryAddress,
+        longitude: value,
+      })
+    }
+  }
+
+  const handleSubmitOrder = async () => {
+    if (loading) return
+    setLoading(true)
+
+    const storedUser = localStorage.getItem("userDetails")
+    const parsedUserDetails = storedUser ? JSON.parse(storedUser) : null
+    const userId = parsedUserDetails?.id
+    const token = parsedUserDetails?.token
+
+    if (!userId) {
+      alert("Authentication information missing. Please log in.")
+      setLoading(false)
+      return
+    }
+
+    if (!fuelStation || !selectedFuelId || orderQuantity <= 0 || !deliveryAddress.address || !phone || !deliveryDate) {
+      alert("Please fill in all fields and select valid values.")
+      setLoading(false)
+      return
+    }
+
+    // Basic phone validation (adjust regex as needed)
+    const phoneRegex = /^[0-9]{10}$/
+    if (!phoneRegex.test(phone)) {
+      alert("Please enter a valid 10-digit phone number.")
+      setLoading(false)
+      return
+    }
+
+    // Basic date validation (check if it's a future date)
+    const currentDate = new Date()
+    const selectedDate = new Date(deliveryDate)
+    if (selectedDate <= currentDate) {
+      alert("Please select a valid delivery date in the future.")
+      setLoading(false)
+      return
+    }
+
+    // Get the selected fuel type name
+    const selectedFuelTypeName = fuelStation.fuelTypes.find((fuel) => fuel._id === selectedFuelId)?.fuelType.name || ""
+
+    // Prepare the order data with the necessary details
+    const orderData = {
+      userId, // User ID from local storage or session
+      fuelStationId: fuelStation._id, // Fuel station ID
+      fuelType: selectedFuelTypeName, // Selected fuel type name (e.g., "Petrol")
+      quantity: orderQuantity, // Quantity of fuel ordered
+      totalCost: totalPrice, // Total cost of the order
+      phone, // User's phone number
+      deliveryAddress: {
+        latitude: deliveryAddress.latitude, // Delivery address latitude
+        longitude: deliveryAddress.longitude, // Delivery address longitude
+        address: deliveryAddress.address, // Address text
+      },
+      status: "PENDING", // Default status of the order
+      deliveryDate, // Delivery date for the order
+    }
+
+    try {
+      const response = await fetch(`http://localhost:8000/api/v1/orders`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(orderData),
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.message || "Failed to place order")
+      }
+
+      alert(`Order placed successfully! Total: ₹${totalPrice.toFixed(2)}`)
+      // Reset form or redirect after order is placed successfully
+      setOrderQuantity(1) // Reset quantity field
+      setDeliveryAddress({ latitude: 0, longitude: 0, address: "" }) // Clear delivery address field
+      setPhone("") // Clear phone number field
+      setDeliveryDate("") // Clear delivery date field
+      router.push("/orders")
+    } catch (error) {
+      if (error instanceof Error) {
+        alert(error.message || "Something went wrong. Please try again.")
+      } else {
+        alert("Something went wrong. Please try again.")
+      }
+    } finally {
+      setLoading(false)
+    }
   }
 
   if (loading) {
@@ -153,7 +274,6 @@ export default function OrderPage() {
       </div>
 
       <div className="grid md:grid-cols-3 gap-6">
-        {/* Main Order Form */}
         <div className="md:col-span-2">
           <Card>
             <CardHeader>
@@ -183,128 +303,108 @@ export default function OrderPage() {
                       <RadioGroupItem value={fuel._id} id={fuel._id} className="peer sr-only" />
                       <Label
                         htmlFor={fuel._id}
-                        className="flex flex-col gap-1 rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
+                        className="border rounded-xl p-4 w-full bg-white border-gray-300 hover:bg-blue-100 cursor-pointer flex justify-between items-center peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-blue-50"
                       >
-                        <div className="flex justify-between items-center">
-                          <span className="font-medium capitalize">{fuel.fuelType.name}</span>
-                          {selectedFuelId === fuel._id && <Check className="h-4 w-4 text-primary" />}
+                        <div>
+                          <p className="font-medium">{fuel.fuelType.name}</p>
+                          <p className="text-sm text-gray-600">₹ {fuel.price} /litre</p>
                         </div>
-                        <span className="text-2xl font-bold text-blue-600">₹{fuel.price}</span>
-                        <span className="text-xs text-gray-500">per liter • {fuel.quantity} liters available</span>
+                        <div className="text-sm text-gray-500">{fuel.quantity} litres available</div>
                       </Label>
                     </div>
                   ))}
                 </RadioGroup>
               </div>
 
-              <Separator />
-
               <div>
-                <h3 className="text-lg font-medium mb-3">Quantity</h3>
-                <div className="grid gap-2">
-                  <Label htmlFor="quantity">Liters</Label>
-                  <div className="flex items-center gap-2">
-                    <Input
-                      id="quantity"
-                      type="number"
-                      min="1"
-                      max={selectedFuel?.quantity || 1}
-                      value={orderQuantity}
-                      onChange={handleQuantityChange}
-                      className="w-32"
-                    />
-                    <span className="text-sm text-gray-500">Max: {selectedFuel?.quantity || 0} liters</span>
-                  </div>
-                </div>
+                <Label htmlFor="orderQuantity">Order Quantity (litres)</Label>
+                <Input
+                  id="orderQuantity"
+                  type="number"
+                  min="1"
+                  max={selectedFuel?.quantity || 0}
+                  value={orderQuantity}
+                  onChange={handleQuantityChange}
+                  className="mt-1"
+                />
               </div>
 
-              <Separator />
-
-              <div>
-                <h3 className="text-lg font-medium mb-3">Delivery Information</h3>
-                <div className="grid gap-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="address">Delivery Address</Label>
-                    <Input id="address" placeholder="Enter your full address" />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="grid gap-2">
-                      <Label htmlFor="phone">Phone Number</Label>
-                      <Input id="phone" placeholder="Your contact number" />
-                    </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="date">Delivery Date</Label>
-                      <Input id="date" type="date" />
-                    </div>
-                  </div>
-                </div>
+              <div className="flex justify-between">
+                <div className="font-semibold">Total Price</div>
+                <div className="font-semibold text-lg text-green-600">₹ {totalPrice.toFixed(2)}</div>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Order Summary */}
         <div>
           <Card>
             <CardHeader>
-              <CardTitle>Order Summary</CardTitle>
+              <CardTitle>Delivery Information</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {selectedFuel && (
-                <>
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center gap-2">
-                      <Droplet className="h-5 w-5 text-blue-600" />
-                      <span className="font-medium capitalize">{selectedFuel.fuelType.name}</span>
-                    </div>
-                    <span>₹{selectedFuel.price} / liter</span>
-                  </div>
+              <div>
+                <Label htmlFor="deliveryAddress">Delivery Address</Label>
+                <Input
+                  id="deliveryAddress"
+                  type="text"
+                  value={deliveryAddress.address}
+                  onChange={handleAddressChange}
+                  placeholder="Enter your full address"
+                />
+              </div>
 
-                  <div className="flex justify-between items-center">
-                    <span>Quantity</span>
-                    <span>{orderQuantity} liters</span>
-                  </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <Label htmlFor="latitude">Latitude</Label>
+                  <Input
+                    id="latitude"
+                    type="number"
+                    step="0.000001"
+                    value={deliveryAddress.latitude || ""}
+                    onChange={handleLatitudeChange}
+                    placeholder="e.g. 27.700769"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="longitude">Longitude</Label>
+                  <Input
+                    id="longitude"
+                    type="number"
+                    step="0.000001"
+                    value={deliveryAddress.longitude || ""}
+                    onChange={handleLongitudeChange}
+                    placeholder="e.g. 85.300140"
+                  />
+                </div>
+              </div>
 
-                  <Separator />
+              <div>
+                <Label htmlFor="phone">Phone Number</Label>
+                <Input
+                  id="phone"
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="10-digit phone number"
+                />
+              </div>
 
-                  <div className="flex justify-between items-center">
-                    <span>Subtotal</span>
-                    <span>₹{(selectedFuel.price * orderQuantity).toFixed(2)}</span>
-                  </div>
-
-                  <div className="flex justify-between items-center">
-                    <span>Delivery Fee</span>
-                    <span>₹50.00</span>
-                  </div>
-
-                  <Separator />
-
-                  <div className="flex justify-between items-center font-bold text-lg">
-                    <span>Total</span>
-                    <span>₹{(selectedFuel.price * orderQuantity + 50).toFixed(2)}</span>
-                  </div>
-                </>
-              )}
+              <div>
+                <Label htmlFor="deliveryDate">Delivery Date</Label>
+                <Input
+                  id="deliveryDate"
+                  type="date"
+                  value={deliveryDate}
+                  onChange={(e) => setDeliveryDate(e.target.value)}
+                  min={new Date().toISOString().split("T")[0]}
+                />
+              </div>
             </CardContent>
-            <CardFooter className="flex flex-col gap-4">
-              <Button
-                className="w-full bg-blue-600 hover:bg-blue-700"
-                size="lg"
-                onClick={handleSubmitOrder}
-                disabled={!selectedFuelId || orderQuantity <= 0}
-              >
-                Place Order
+            <CardFooter className="flex justify-center">
+              <Button onClick={handleSubmitOrder} className="w-full" disabled={loading}>
+                {loading ? "Placing Order..." : "Place Order"}
               </Button>
-
-              <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
-                <CreditCard className="h-4 w-4" />
-                <span>Secure payment processing</span>
-              </div>
-
-              <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
-                <Truck className="h-4 w-4" />
-                <span>Fast delivery within 24 hours</span>
-              </div>
             </CardFooter>
           </Card>
         </div>

@@ -1,82 +1,60 @@
-"use client"
+import { Button } from '@/components/ui/button'
+import { Download } from 'lucide-react'
+import Image from 'next/image'
+import Link from 'next/link'
+import React from 'react'
 
-import { motion } from "framer-motion"
-import Image from "next/image"
-import { ChevronRight, Download } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-
-export function HeroSection() {
+const HeroSection = () => {
   return (
-    <section className="relative bg-gradient-to-r from-primary/90 to-primary overflow-hidden">
-      <div className="absolute inset-0 bg-grid-white/5 [mask-image:linear-gradient(0deg,rgba(255,255,255,0.1),rgba(255,255,255,0.5))]"></div>
-      <div className="container mx-auto px-4 py-20 relative z-10">
-        <div className="flex flex-col lg:flex-row items-center justify-between gap-12">
-          <motion.div
-            className="lg:w-1/2 text-white"
-            initial={{ opacity: 0, x: -50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <Badge className="mb-4 bg-white/20 text-white hover:bg-white/30">New Release</Badge>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
-              Find and Purchase Fuel Faster with QuickFuel
-            </h1>
-            <p className="text-lg md:text-xl opacity-90 mb-8">
-              Locate nearby fuel stations, check prices, and make payments all from your smartphone. Save time and never
-              worry about finding fuel again.
-            </p>
-            <div className="flex flex-wrap gap-4">
-              <Button size="lg" className="bg-white text-primary hover:bg-white/90">
-                <Download className="mr-2 h-5 w-5" />
-                Download App
-              </Button>
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white/10">
-                Learn More
-                <ChevronRight className="ml-2 h-5 w-5" />
-              </Button>
-            </div>
-            <div className="flex items-center gap-4 mt-8">
-              <div className="flex -space-x-2">
-                {[1, 2, 3, 4].map((i) => (
-                  <div
-                    key={i}
-                    className="h-10 w-10 rounded-full border-2 border-primary bg-white flex items-center justify-center text-primary font-bold"
-                  >
-                    {i}
-                  </div>
-                ))}
-              </div>
-              <p className="text-sm opacity-90">
-                Join <span className="font-bold">10,000+</span> users finding fuel easily
+    <>
+      <section className="w-full py-12 md:py-24 lg:py-32 bg-gradient-to-r from-green-600 to-green-800 text-white">
+        <div className="container px-4 md:px-6 space-y-10 xl:space-y-16">
+          <div className="grid gap-6 lg:grid-cols-2 lg:gap-12 items-center justify-evenly">
+            <div className="space-y-4">
+              <div className="inline-block rounded-lg bg-green-500/20 px-3 py-1 text-sm">Download Now</div>
+              <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl xl:text-6xl/none">
+                QuickFuel: Refuel Smarter, Drive Further
+              </h1>
+              <p className="max-w-[600px] text-gray-200 md:text-xl">
+                Find the nearest fuel stations, compare prices, and pay directly from your phone. QuickFuel makes
+                refueling your vehicle faster and more convenient than ever.
               </p>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Link href="#download">
+                  <Button size="lg" 
+                  className="bg-white text-green-700 hover:bg-gray-100">
+                    <Download className="mr-2 h-5 w-5" />
+                    App Store
+                  </Button>
+                </Link>
+                <Link href="#download">
+                  <Button size="lg" variant="outline" 
+                  className="bg-white text-green-700 hover:bg-gray-100">
+                    <Download className="mr-2 h-5 w-5" />
+                    Google Play
+                  </Button>
+                </Link>
+              </div>
             </div>
-          </motion.div>
-          <motion.div
-            className="lg:w-1/2 relative"
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-          >
-            <div className="relative h-[500px] w-[250px] mx-auto">
-              <div className="absolute inset-0 bg-black rounded-[40px] shadow-2xl overflow-hidden border-8 border-gray-800">
-                <div className="absolute top-0 left-0 right-0 h-6 bg-black z-10 flex justify-center">
-                  <div className="w-20 h-4 bg-black rounded-b-xl"></div>
-                </div>
+            <div className="flex justify-center lg:justify-end relative">
+              <div className="relative w-[280px] h-[560px] sm:w-[320px] sm:h-[640px] rounded-[40px] border-[8px] border-gray-800 bg-gray-800 shadow-xl overflow-hidden">
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/3 h-6 bg-gray-800 rounded-b-xl"></div>
                 <Image
-                  src="https://blog.tcea.org/wp-content/uploads/2022/05/qrcode_tcea.org-1.png"
-                  alt="QuickFuel App"
-                  fill
-                  className="object-cover rounded-[32px]"
+                  src="https://appscrip.com/wp-content/uploads/2021/03/6-1-507x1024.png"
+                  alt="QuickFuel App Screenshot"
+                  width={320}
+                  height={640}
+                  className="w-full h-full object-cover rounded-[32px]"
                 />
               </div>
-              <div className="absolute -right-16 -top-16 h-40 w-40 bg-yellow-400 rounded-full blur-3xl opacity-30"></div>
-              <div className="absolute -left-16 -bottom-16 h-40 w-40 bg-blue-400 rounded-full blur-3xl opacity-30"></div>
+              <div className="absolute -bottom-6 -left-6 w-24 h-24 bg-yellow-400 rounded-full animate-pulse opacity-70"></div>
+              <div className="absolute -top-6 -right-6 w-32 h-32 bg-green-400 rounded-full animate-pulse opacity-70"></div>
             </div>
-          </motion.div>
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+    </>
   )
 }
 
+export default HeroSection
