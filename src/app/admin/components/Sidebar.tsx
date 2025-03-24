@@ -50,7 +50,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
           <li className="mb-4">
             <Link href="/admin/ordersdetails" className="flex items-center space-x-2 p-2 rounded hover:bg-gray-700">
               <Users className="h-5 w-5" />
-              <span>Orders Details</span>
+              <span>View Orders details</span>
             </Link>
           </li>
           <li className="mb-4">

@@ -1,42 +1,59 @@
-/** @format */
-"use client"
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import "../globals.css";
-import { cn } from "@/lib/utils";
-import Sidebar from "./components/Sidebar";
-import Header from "./components/Header";
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { useAuth } from "@/lib/authChecker";
+'use client'
+import type React from "react"
+import "../globals.css"
+import { Inter } from "next/font/google"
+import { ThemeProvider } from "../ThemeProvider"
+import DashboardSidebar from "./components/DashboardSidebar"
+import DashboardHeader from "./components/DashboardHeader"
+import { useState } from "react"
 
-const inter = Inter({ subsets: ["latin"] });
+// Importing Inter font from Google
+const inter = Inter({ subsets: ["latin"] })
 
 
-export default function RootLayout({
-  children
-}: {
-  children: React.ReactNode;
-}) {
+// Defining the props type for RootLayout
+interface DashboardLayoutProps {
+  children: React.ReactNode
+}
 
-  
-const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const router = useRouter();
- 
-  const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
+export default function RootLayout({ children }: DashboardLayoutProps) {
+  // Dark mode state and handler
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(false)
+  const toggleDarkMode = () => setIsDarkMode((prev) => !prev)
 
+  // Mobile sidebar state and handler
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState<boolean>(false)
+  const toggleMobileSidebar = () => {
+    setIsMobileSidebarOpen((prev) => !prev)
+  }
 
   return (
-    <div className="flex w-full h-screen bg-gray-100">
-    <Sidebar isOpen={isSidebarOpen} toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
-    <div className="flex-1 flex flex-col overflow-hidden">
-      <Header toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
-      <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-200">
-        <div className="container mx-auto px-6 py-8">
-          <div className="mt-4">{children}</div>
+    <html lang="en" suppressHydrationWarning>
+      <body className={inter.className}>
+      <div className="flex h-screen overflow-hidden">
+
+        {/* Sidebar Component */}
+        <DashboardSidebar
+          isMobileSidebarOpen={isMobileSidebarOpen}
+          setIsMobileSidebarOpen={setIsMobileSidebarOpen}
+        />
+      <div className="flex-1 flex flex-col overflow-hidden">
+
+        {/* Header Component */}
+        <DashboardHeader
+          isDarkMode={isDarkMode}
+          toggleDarkMode={toggleDarkMode}
+          toggleMobileSidebar={toggleMobileSidebar}
+        />
+
+        {/* ThemeProvider for Dark Mode and System Default Theme */}
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+        <main className="flex-1 overflow-auto p-4 md:p-6"> {children}
+          </main>
+        </ThemeProvider>
         </div>
-      </main>
-    </div>
-  </div>
-  );
+        </div>
+      </body>
+    </html>
+  )
 }

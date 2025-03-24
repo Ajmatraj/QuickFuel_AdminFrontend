@@ -16,10 +16,13 @@ import {
   LogOut,
 } from "lucide-react"
 import { DarkModeToggle } from "./DarkModeToggle"
-import { useRouter } from "next/navigation" // Use next/navigation for Next.js 13+
+import {usePathname, useRouter } from "next/navigation" // Use next/navigation for Next.js 13+
 import Image from "next/image"
 
 const UserNavbar = () => {
+
+  const pathname = usePathname();
+
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [activePage, setActivePage] = useState("Home")
   const [isScrolled, setIsScrolled] = useState(false)
@@ -101,6 +104,8 @@ const UserNavbar = () => {
     setIsLoggedIn(false)
     router.push("/login") // Redirect user after logout
   }
+
+  if(pathname.startsWith('/admin')) return null;
 
   return (
     <nav

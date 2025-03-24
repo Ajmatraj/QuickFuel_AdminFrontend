@@ -13,7 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from "@/components/ui/separator"
 
 import type { UserProfile } from "@/app/types/user"
-
+import { useRouter } from "next/navigation"
 
 interface Order {
   _id: string
@@ -139,6 +139,13 @@ export default function OrdersTab({ user }: { user: UserProfile }) {
     )
   }
 
+  const router = useRouter()
+
+  // Handle navigation to the order details page.
+  const handleViewDetails = (orderId: string) => {
+    router.push(`/orders/${orderId}`)
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -152,8 +159,8 @@ export default function OrdersTab({ user }: { user: UserProfile }) {
             <SelectContent>
               <SelectItem value="all">All Orders</SelectItem>
               <SelectItem value="pending">Pending</SelectItem>
-              <SelectItem value="confirmed">Confirmed</SelectItem>
-              <SelectItem value="delivered">Delivered</SelectItem>
+              <SelectItem value="processing">Processing</SelectItem>
+              <SelectItem value="completed">Completed</SelectItem>
               <SelectItem value="cancelled">Cancelled</SelectItem>
             </SelectContent>
           </Select>
@@ -233,7 +240,7 @@ export default function OrdersTab({ user }: { user: UserProfile }) {
                       Cancel Order
                     </Button>
                   )}
-                  <Button variant="default" size="sm">
+                  <Button onClick={() => handleViewDetails(order._id)} variant="default" size="sm">
                     View Details
                   </Button>
                 </CardFooter>
@@ -305,7 +312,7 @@ export default function OrdersTab({ user }: { user: UserProfile }) {
                       Cancel Order
                     </Button>
                   )}
-                  <Button variant="default" size="sm">
+                  <Button onClick={() => handleViewDetails(order._id)} variant="default" size="sm">
                     View Details
                   </Button>
                 </CardFooter>

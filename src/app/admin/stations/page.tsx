@@ -84,6 +84,8 @@ export default function FuelStationsPage() {
   }, [])
 
   return (
+    <>
+    
     <div className="container mx-auto py-8 px-4">
       <h1 className="text-3xl font-bold mb-6">My Fuel Stations</h1>
 
@@ -121,11 +123,11 @@ export default function FuelStationsPage() {
                   <div className="mt-2 mb-4">
                     <p className="text-sm text-muted-foreground mb-1">Available Fuel Types:</p>
                     <div className="flex flex-wrap gap-2">
-                      {station.fuelTypes.map((type) => (
+                      {/* {station.fuelTypes.map((type) => (
                         <span key={type} className="px-2 py-1 bg-primary/10 text-primary text-xs rounded-full">
                           {type}
                         </span>
-                      ))}
+                      ))} */}
                     </div>
                   </div>
                 )}
@@ -139,6 +141,7 @@ export default function FuelStationsPage() {
         </div>
       )}
     </div>
+    </>
   )
 }
 
