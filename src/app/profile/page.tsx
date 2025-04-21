@@ -3,10 +3,10 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Loader2 } from "lucide-react"
+import { Loader2 } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { AlertCircle } from "lucide-react"
+import { AlertCircle } from 'lucide-react'
 import { useToast } from "@/hooks/use-toast"
 
 import type { UserProfile } from "@/app/types/user"
@@ -16,7 +16,7 @@ import OrdersTab from "./components/OrdersTab"
 import RatingsTab from "./components/RatingsTab"
 import ServicesTab from "./components/ServicesTab"
 import SettingsTab from "./components/SettingsTab"
-
+import ChatTab from "./components/ChatTab"
 
 export default function ProfilePage() {
   const [user, setUser] = useState<UserProfile | null>(null)
@@ -156,10 +156,11 @@ export default function ProfilePage() {
       <ProfileHeader user={user} />
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid grid-cols-3 md:grid-cols-5 mb-8">
+        <TabsList className="grid grid-cols-3 md:grid-cols-6 mb-8">
           <TabsTrigger value="profile">Profile</TabsTrigger>
           <TabsTrigger value="orders">Orders</TabsTrigger>
           <TabsTrigger value="ratings">Ratings</TabsTrigger>
+          {/* <TabsTrigger value="chat">Chat</TabsTrigger> */}
           {user.role === "fuelstation" && <TabsTrigger value="services">Services</TabsTrigger>}
           <TabsTrigger value="settings">Settings</TabsTrigger>
         </TabsList>
@@ -176,6 +177,10 @@ export default function ProfilePage() {
           <RatingsTab user={user} />
         </TabsContent>
 
+        {/* <TabsContent value="chat">
+          <ChatTab user={user} />
+        </TabsContent> */}
+
         {user.role === "fuelstation" && (
           <TabsContent value="services">
             <ServicesTab user={user} />
@@ -189,4 +194,3 @@ export default function ProfilePage() {
     </div>
   )
 }
-

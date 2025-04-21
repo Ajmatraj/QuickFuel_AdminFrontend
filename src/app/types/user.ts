@@ -16,4 +16,24 @@ export interface UserProfile {
     bio?: string
   }
   
+  export interface User {
+    _id: string
+    name: string
+    email: string
+    status: "online" | "offline"
+    lastMessage: string
+    lastMessageTime: string
+    unreadCount: number
+  }
+  
+  export interface Message {
+    _id: string
+    content: string
+    senderId: string
+    receiverId: string
+    timestamp: string
+    isRead: boolean
+    createdAt: string // Added createdAt property
+
+  }
   

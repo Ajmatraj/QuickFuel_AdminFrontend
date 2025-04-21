@@ -37,15 +37,15 @@ export default function DashboardSidebar({ isMobileSidebarOpen, setIsMobileSideb
             <LayoutDashboard className="h-4 w-4" />
             Dashboard
           </Button>
-          <Button variant="ghost" className="w-full justify-start gap-2">
+          <Button variant="ghost" onClick={()=>{router.push("/admin/users")}} className="w-full justify-start gap-2">
             <Users className="h-4 w-4" />
             Users
           </Button>
-          <Button onClick={()=>{router.push("admin/fuelstation")}} variant="ghost" className="w-full justify-start gap-2">
+          <Button onClick={()=>{router.push("/admin/fuelstation")}} variant="ghost" className="w-full justify-start gap-2">
             <GasPump className="h-4 w-4" />
             Fuel Stations
           </Button>
-          <Button onClick={()=>{router.push("admin/ordersdetails")}} variant="ghost" className="w-full justify-start gap-2">
+          <Button onClick={()=>{router.push("/admin/ordersdetails")}} variant="ghost" className="w-full justify-start gap-2">
             <FileText className="h-4 w-4" />
             Orders
           </Button>
@@ -53,10 +53,7 @@ export default function DashboardSidebar({ isMobileSidebarOpen, setIsMobileSideb
             <BarChart3 className="h-4 w-4" />
             Analytics
           </Button>
-          <Button variant="ghost" className="w-full justify-start gap-2">
-            <MapPin className="h-4 w-4" />
-            Map View
-          </Button>
+          
           <Button variant="ghost" className="w-full justify-start gap-2">
             <FileCog className="h-4 w-4" />
             Reports

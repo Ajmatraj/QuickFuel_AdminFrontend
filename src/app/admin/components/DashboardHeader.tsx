@@ -154,7 +154,7 @@ const DashboardHeader = ({ isDarkMode, toggleDarkMode, toggleMobileSidebar }: Da
               <SheetTitle>Dashboard</SheetTitle>
             </SheetHeader>
             <nav className="flex flex-col gap-2">
-              <Button variant="ghost" className="justify-start gap-2" onClick={() => navigateTo("/dashboard")}>
+              <Button variant="ghost" className="justify-start gap-2" onClick={() => navigateTo("/admin")}>
                 <Home className="h-4 w-4" />
                 Home
               </Button>
@@ -164,7 +164,7 @@ const DashboardHeader = ({ isDarkMode, toggleDarkMode, toggleMobileSidebar }: Da
                   <Button
                     variant="ghost"
                     className="justify-start gap-2"
-                    onClick={() => navigateTo("/dashboard/users")}
+                    onClick={() => navigateTo("/admin/users")}
                   >
                     <Users className="h-4 w-4" />
                     Users
@@ -185,7 +185,7 @@ const DashboardHeader = ({ isDarkMode, toggleDarkMode, toggleMobileSidebar }: Da
                   <Button
                     variant="ghost"
                     className="justify-start gap-2"
-                    onClick={() => navigateTo("/dashboard/my-station")}
+                    onClick={() => navigateTo("/admin/ordersdetails")}
                   >
                     <Truck className="h-4 w-4" />
                     My Station
@@ -193,7 +193,7 @@ const DashboardHeader = ({ isDarkMode, toggleDarkMode, toggleMobileSidebar }: Da
                   <Button
                     variant="ghost"
                     className="justify-start gap-2"
-                    onClick={() => navigateTo("/dashboard/orders")}
+                    onClick={() => navigateTo("/admin/orders")}
                   >
                     <FileText className="h-4 w-4" />
                     Orders
@@ -225,7 +225,7 @@ const DashboardHeader = ({ isDarkMode, toggleDarkMode, toggleMobileSidebar }: Da
 
               <Separator className="my-2" />
 
-              <Button onClick={()=>{router.push("admin/profile/")}} variant="ghost" className="justify-start gap-2" onClick={() => navigateTo("/dashboard/profile")}>
+              <Button onClick={()=>{router.push("admin/profile")}} variant="ghost" className="justify-start gap-2" onClick={() => navigateTo("/dashboard/profile")}>
                 <User className="h-4 w-4" />
                 Profile
               </Button>
