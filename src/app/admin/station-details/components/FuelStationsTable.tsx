@@ -19,30 +19,15 @@ import {
   DialogClose,
 } from "@/components/ui/dialog"
 
-interface FuelTypeDetail {
-  _id: string
-  name: string
-  price: number
-}
-
-interface FuelInventoryItem {
-  _id: string
-  fuelType: FuelTypeDetail
-  price: number
-  quantity: number
-}
-
 // Define the types based on your API response
 interface FuelStation {
   _id: string
   name: string
-  stock: string
-  email: string
-  phone: string
   location: string
-  imageurl: string
-  user: string
-  fuelTypes: FuelInventoryItem[]
+  owner: string
+  stationImage: string
+  fuelTypes: string[]
+  status: string
   createdAt: string
   updatedAt: string
   __v: number
@@ -67,7 +52,7 @@ export function FuelStationsTable() {
   const fetchStations = async () => {
     try {
       setLoading(true)
-      const response = await fetch("http://localhost:8000/api/v1/fuelstations/getAllFuelStations")
+      const response = await fetch("http://localhost:8000/api/v1/stations/allStations")
 
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`)
@@ -103,13 +88,13 @@ export function FuelStationsTable() {
     return name ? name.charAt(0).toUpperCase() : "S"
   }
 
-  // Get fuel type names from the fuelTypes array
-  const getFuelTypeNames = (fuelTypes: FuelInventoryItem[]) => {
-    return fuelTypes.map((item) => item.fuelType.name)
+  // Format status to match expected format (lowercase)
+  const formatStatus = (status: string) => {
+    return status ? status.toLowerCase() : "unknown"
   }
 
   const handleViewDetails = (stationId: string) => {
-    router.push(`/admin/station-details/${stationId}`)
+    router.push(`/station-details/${stationId}`)
   }
 
   const handleDelete = async (stationId: string) => {
@@ -156,7 +141,7 @@ export function FuelStationsTable() {
         <TableRow>
           <TableHead>Station</TableHead>
           <TableHead>Location</TableHead>
-          <TableHead>Contact</TableHead>
+          <TableHead>Owner</TableHead>
           <TableHead>Status</TableHead>
           <TableHead>Fuel Types</TableHead>
           <TableHead>Added</TableHead>
@@ -176,31 +161,30 @@ export function FuelStationsTable() {
               <TableCell className="font-medium">
                 <div className="flex items-center gap-2">
                   <Avatar className="h-8 w-8">
-                    <AvatarImage src={station.imageurl || `/placeholder.svg?height=32&width=32`} alt={station.name} />
+                    <AvatarImage
+                      src={station.stationImage || `/placeholder.svg?height=32&width=32`}
+                      alt={station.name}
+                    />
                     <AvatarFallback>{getInitial(station.name)}</AvatarFallback>
                   </Avatar>
                   {station.name}
                 </div>
               </TableCell>
               <TableCell>{station.location}</TableCell>
-              <TableCell>{station.phone}</TableCell>
+              <TableCell>{station.owner}</TableCell>
               <TableCell>
                 <Badge
-                  variant={getBadgeVariant(station.stock.toLowerCase())}
+                  variant={getBadgeVariant(formatStatus(station.status))}
                   className={
-                    station.stock.toLowerCase() === "available"
+                    formatStatus(station.status) === "active"
                       ? "font-bold bg-green-100 text-green-800 border-green-500 hover:bg-green-200"
                       : "font-medium bg-red-100 text-red-800 border-red-500 hover:bg-red-200"
                   }
                 >
-                  {station.stock}
+                  {formatStatus(station.status)}
                 </Badge>
               </TableCell>
-              <TableCell>
-                {station.fuelTypes && station.fuelTypes.length > 0
-                  ? getFuelTypeNames(station.fuelTypes).join(", ")
-                  : "None"}
-              </TableCell>
+              <TableCell>{station.fuelTypes ? station.fuelTypes.join(", ") : "None"}</TableCell>
               <TableCell>{formatDate(station.createdAt)}</TableCell>
               <TableCell className="text-right">
                 <div className="flex justify-end gap-2">
@@ -217,7 +201,7 @@ export function FuelStationsTable() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => router.push(`/admin/station-edit/${station._id}`)}
+                    onClick={() => router.push(`/station-edit/${station._id}`)}
                     className="h-8 px-2 text-amber-600 hover:text-amber-700 hover:bg-amber-50"
                   >
                     <Pencil className="h-4 w-4" />

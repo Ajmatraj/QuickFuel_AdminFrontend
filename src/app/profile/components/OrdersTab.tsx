@@ -1,17 +1,15 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Loader2, ExternalLink, RefreshCw } from "lucide-react"
+import { Loader2, ExternalLink, RefreshCw, AlertCircle } from "lucide-react"
 import { format } from "date-fns"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { AlertCircle } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from "@/components/ui/separator"
-
 import type { UserProfile } from "@/app/types/user"
 import { useRouter } from "next/navigation"
 
@@ -30,7 +28,7 @@ interface Order {
   phone: string
   deliveryAddress: {
     latitude: number
-    longitude: number
+    longitude: string
     address: string
   }
   orderDate: string
@@ -44,6 +42,8 @@ export default function OrdersTab({ user }: { user: UserProfile }) {
   const [error, setError] = useState<string | null>(null)
   const [statusFilter, setStatusFilter] = useState<string>("all")
   const [activeView, setActiveView] = useState("all")
+
+  const router = useRouter()
 
   const fetchOrders = async () => {
     try {
@@ -107,6 +107,10 @@ export default function OrdersTab({ user }: { user: UserProfile }) {
     }
   }
 
+  const handleViewDetails = (orderId: string) => {
+    router.push(`/orders/${orderId}`)
+  }
+
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center py-12">
@@ -139,13 +143,6 @@ export default function OrdersTab({ user }: { user: UserProfile }) {
     )
   }
 
-  const router = useRouter()
-
-  // Handle navigation to the order details page.
-  const handleViewDetails = (orderId: string) => {
-    router.push(`/orders/${orderId}`)
-  }
-
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -159,8 +156,8 @@ export default function OrdersTab({ user }: { user: UserProfile }) {
             <SelectContent>
               <SelectItem value="all">All Orders</SelectItem>
               <SelectItem value="pending">Pending</SelectItem>
-              <SelectItem value="processing">Processing</SelectItem>
-              <SelectItem value="completed">Completed</SelectItem>
+              <SelectItem value="confirmed">Confirmed</SelectItem>
+              <SelectItem value="delivered">Delivered</SelectItem>
               <SelectItem value="cancelled">Cancelled</SelectItem>
             </SelectContent>
           </Select>
@@ -200,15 +197,17 @@ export default function OrdersTab({ user }: { user: UserProfile }) {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <h4 className="text-sm font-medium text-muted-foreground mb-1">Fuel Station</h4>
-                      <p className="font-medium">{order.station.name}</p>
-                      <a
-                        href={order.station.location}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm text-primary flex items-center gap-1 mt-1"
-                      >
-                        View on Maps <ExternalLink className="h-3 w-3" />
-                      </a>
+                      <p className="font-medium">{order.station ? order.station.name : "No station assigned"}</p>
+                      {order.station ? (
+                        <a
+                          href={order.station.location}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm text-primary flex items-center gap-1 mt-1"
+                        >
+                          View on Maps <ExternalLink className="h-3 w-3" />
+                        </a>
+                      ) : null}
                     </div>
                     <div>
                       <h4 className="text-sm font-medium text-muted-foreground mb-1">Delivery Address</h4>
@@ -230,98 +229,24 @@ export default function OrdersTab({ user }: { user: UserProfile }) {
                     </div>
                     <div>
                       <h4 className="text-sm font-medium text-muted-foreground mb-1">Total Cost</h4>
-                      <p className="font-medium text-lg">₹{order.totalCost.toFixed(2)}</p>
+                      <p className="font-medium">Rs. {order.totalCost.toFixed(2)}</p>
                     </div>
                   </div>
                 </CardContent>
-                <CardFooter className="flex justify-end gap-2 pt-0">
-                  {order.status === "PENDING" && (
-                    <Button variant="outline" size="sm" className="text-red-500 hover:text-red-700 hover:bg-red-50">
-                      Cancel Order
-                    </Button>
-                  )}
-                  <Button onClick={() => handleViewDetails(order._id)} variant="default" size="sm">
-                    View Details
-                  </Button>
+                <CardFooter>
+                  <Button onClick={() => handleViewDetails(order._id)}>View Details</Button>
                 </CardFooter>
               </Card>
             ))
           )}
         </TabsContent>
 
-        <TabsContent value="recent" className="space-y-4">
-          {filteredOrders.slice(0, 3).length === 0 ? (
-            <div className="text-center py-8 bg-muted/20 rounded-lg">
-              <p className="text-muted-foreground">No recent orders match your filter criteria</p>
-            </div>
-          ) : (
-            filteredOrders.slice(0, 3).map((order) => (
-              <Card key={order._id} className="overflow-hidden">
-                <CardHeader className="pb-3">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <CardTitle className="text-lg">
-                        {order.fuelType} - {order.quantity} Liters
-                      </CardTitle>
-                      <CardDescription>Order #{order._id.substring(order._id.length - 8)}</CardDescription>
-                    </div>
-                    <Badge className={getStatusColor(order.status)}>{order.status}</Badge>
-                  </div>
-                </CardHeader>
-                <CardContent className="pb-3">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <h4 className="text-sm font-medium text-muted-foreground mb-1">Fuel Station</h4>
-                      <p className="font-medium">{order.station.name}</p>
-                      <a
-                        href={order.station.location}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm text-primary flex items-center gap-1 mt-1"
-                      >
-                        View on Maps <ExternalLink className="h-3 w-3" />
-                      </a>
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-medium text-muted-foreground mb-1">Delivery Address</h4>
-                      <p className="font-medium">{order.deliveryAddress.address}</p>
-                    </div>
-                  </div>
-
-                  <Separator className="my-4" />
-
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                      <h4 className="text-sm font-medium text-muted-foreground mb-1">Order Date</h4>
-                      <p className="font-medium">{format(new Date(order.orderDate), "MMM d, yyyy")}</p>
-                      <p className="text-xs text-muted-foreground">{format(new Date(order.orderDate), "h:mm a")}</p>
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-medium text-muted-foreground mb-1">Contact</h4>
-                      <p className="font-medium">{order.phone}</p>
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-medium text-muted-foreground mb-1">Total Cost</h4>
-                      <p className="font-medium text-lg">₹{order.totalCost.toFixed(2)}</p>
-                    </div>
-                  </div>
-                </CardContent>
-                <CardFooter className="flex justify-end gap-2 pt-0">
-                  {order.status === "PENDING" && (
-                    <Button variant="outline" size="sm" className="text-red-500 hover:text-red-700 hover:bg-red-50">
-                      Cancel Order
-                    </Button>
-                  )}
-                  <Button onClick={() => handleViewDetails(order._id)} variant="default" size="sm">
-                    View Details
-                  </Button>
-                </CardFooter>
-              </Card>
-            ))
-          )}
+        <TabsContent value="recent">
+          <div className="text-muted-foreground text-center py-8">
+            <p>Recent order filtering not implemented yet.</p>
+          </div>
         </TabsContent>
       </Tabs>
     </div>
   )
 }
-

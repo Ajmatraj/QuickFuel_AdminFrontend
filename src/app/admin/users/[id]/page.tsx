@@ -12,7 +12,6 @@ import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
 import { Loader2, AlertCircle, ArrowLeft } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { uploadToCloudinary } from "@/lib/cloudinary"
 import { UserAvatarUpload } from "../components/UserAvatarUpload"
 
 // Interface for user data
@@ -133,11 +132,11 @@ export default function EditUserPage() {
         return
       }
 
-      // Validate file size (max 2MB)
-      if (file.size > 2 * 1024 * 1024) {
-        setAvatarError("Image size should be less than 2MB")
-        return
-      }
+      // // Validate file size (max 2MB)
+      // if (file.size > 2 * 1024 * 1024) {
+      //   setAvatarError("Image size should be less than 2MB")
+      //   return
+      // }
 
       setAvatarFile(file)
       setAvatarError(undefined)
@@ -185,33 +184,23 @@ export default function EditUserPage() {
         throw new Error("Authentication information missing")
       }
 
-      // First, upload avatar to Cloudinary if a new one was selected
-      let avatarUrl = userData.avatar
-
-      if (avatarFile) {
-        const uploadResult = await uploadToCloudinary(avatarFile)
-
-        if (!uploadResult) {
-          throw new Error("Failed to upload avatar")
-        }
-
-        avatarUrl = uploadResult.url
-      }
+    
 
       // Prepare data for API call
-      const updateData = {
-        name: formData.name,
-        username: formData.username,
-        email: formData.email,
-        role: formData.role,
-        avatar: avatarUrl, // Use the Cloudinary URL
+      const formPayload = new FormData()
+      formPayload.append("name", formData.name)
+      formPayload.append("username", formData.username)
+      formPayload.append("email", formData.email)
+      formPayload.append("role", formData.role)
+      if (avatarFile) {
+        formPayload.append("avatar", avatarFile)
       }
 
       // Make API call to update user profile
-      const response = await axios.put(`http://localhost:8000/api/v1/users/update/${userData._id}`, updateData, {
+      const response = await axios.put(`http://localhost:8000/api/v1/users/update/${userData._id}`, formPayload, {
         headers: {
           Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
+          "Content-Type": "multipart/form-data",
         },
       })
 
@@ -339,7 +328,7 @@ export default function EditUserPage() {
           <CardDescription>Update user information and avatar.</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6" encType="multipart/form-data">
             <div className="flex flex-col items-center mb-6">
               <UserAvatarUpload
                 currentAvatar={userData.avatar}
