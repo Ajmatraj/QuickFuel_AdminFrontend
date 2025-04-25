@@ -1,12 +1,12 @@
 "use client"
 
 import type React from "react"
+
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Loader2, Plus, Trash2, AlertCircle } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -31,12 +31,11 @@ interface FuelStationFormData {
   fuelTypes: FuelType[]
 }
 
-
 interface UserDetails {
-  id:string;
-  name: string;
-  email: string;
-  avatar: string | null;
+  id: string
+  name: string
+  email: string
+  avatar: string | null
 }
 
 interface AuthUser {
@@ -46,7 +45,11 @@ interface AuthUser {
   role: string | null
 }
 
-export default function RegisterFuelStationPage() {
+interface RegisterFuelStationPageProps {
+  onSuccess?: () => void
+}
+
+export default function RegisterFuelStationPage({ onSuccess }: RegisterFuelStationPageProps) {
   const router = useRouter()
 
   // Authentication state
@@ -70,11 +73,6 @@ export default function RegisterFuelStationPage() {
   // Load user data from localStorage on component mount
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const message = new URLSearchParams(window.location.search).get("message")
-      if (message) {
-        toast.success(message)
-      }
-
       const storedUser = {
         accessToken: localStorage.getItem("accessToken"),
         refreshToken: localStorage.getItem("refreshToken"),
@@ -82,28 +80,18 @@ export default function RegisterFuelStationPage() {
         role: localStorage.getItem("role"),
       }
 
-      console.log(storedUser)
-      console.log()
-
       const parsedUserDetails = storedUser.userDetails ? JSON.parse(storedUser.userDetails) : null
-
-      console.log(parsedUserDetails)
 
       if (storedUser.accessToken && parsedUserDetails) {
         setUser({
           ...storedUser,
           userDetails: parsedUserDetails,
         })
-      } else {
-        toast.error("You must be logged in to register a fuel station")
-        setTimeout(() => {
-          router.push("/login")
-        }, 2000)
       }
 
       setIsLoading(false)
     }
-  }, [router])
+  }, [])
 
   // Handle form field changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -242,8 +230,6 @@ export default function RegisterFuelStationPage() {
         })),
       }
 
-      console.log(payload)
-
       // Only add imageurl if it's a valid URL
       if (formData.imageUrl && isValidUrl(formData.imageUrl)) {
         payload.imageurl = formData.imageUrl
@@ -260,11 +246,12 @@ export default function RegisterFuelStationPage() {
 
       const data = await response.json()
 
-      console.log(data)
-
       if (response.ok && data.success) {
         toast.success("Fuel station registered successfully")
         resetForm()
+        if (onSuccess) {
+          onSuccess()
+        }
       } else {
         setError(data.message || "Something went wrong")
         toast.error(data.message || "Failed to register fuel station")
@@ -280,176 +267,154 @@ export default function RegisterFuelStationPage() {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto py-20 flex justify-center items-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="flex justify-center items-center py-4">
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
         <span className="ml-2">Loading...</span>
       </div>
     )
   }
 
-  if (!user || !user.userDetails) {
-    return (
-      <div className="container mx-auto py-10">
-        <Card className="max-w-md mx-auto">
-          <CardHeader>
-            <CardTitle>Authentication Required</CardTitle>
-            <CardDescription>You need to be logged in to register a fuel station</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Alert variant="destructive">
-              <AlertCircle className="mr-2 h-4 w-4" />
-              <AlertDescription>Login to access the registration form</AlertDescription>
-            </Alert>
-          </CardContent>
-        </Card>
-      </div>
-    )
-  }
-
   return (
-    <div className="container mx-auto py-10">
-      <Card className="max-w-md mx-auto">
-        <CardHeader>
-          <CardTitle>Register Fuel Station</CardTitle>
-        </CardHeader>
+    <div className="w-full">
+      {error && (
+        <Alert variant="destructive" className="mb-4">
+          <AlertCircle className="mr-2 h-4 w-4" />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
 
-        <CardContent>
-          {error && (
-            <Alert variant="destructive" className="mb-4">
-              <AlertCircle className="mr-2 h-4 w-4" />
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="name">Station Name</Label>
+            <Input
+              id="name"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              placeholder="Enter station name"
+              required
+            />
+          </div>
 
-          <form onSubmit={handleSubmit}>
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="name">Station Name</Label>
+          <div>
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              placeholder="Enter station email"
+              type="email"
+              required
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="phone">Phone</Label>
+            <Input
+              id="phone"
+              name="phone"
+              value={formData.phone}
+              onChange={handleChange}
+              placeholder="Enter station phone"
+              type="tel"
+              required
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="location">Location</Label>
+            <Input
+              id="location"
+              name="location"
+              value={formData.location}
+              onChange={handleChange}
+              placeholder="Enter station location"
+              required
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="imageUrl">Image URL (Optional)</Label>
+            <Input
+              id="imageUrl"
+              name="imageUrl"
+              value={formData.imageUrl}
+              onChange={handleChange}
+              placeholder="Enter image URL (optional)"
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="stock">Stock Status</Label>
+            <Select value={formData.stock} onValueChange={handleStockChange}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select stock status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="available">Available</SelectItem>
+                <SelectItem value="outOfStock">Out of Stock</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <Separator className="my-6" />
+
+        <div>
+          <Label>Fuel Types</Label>
+          {formData.fuelTypes.map((fuelType, index) => (
+            <div key={index} className="space-y-4 mt-4">
+              <div className="flex space-x-4">
                 <Input
-                  id="name"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  placeholder="Enter station name"
+                  value={fuelType.name}
+                  onChange={(e) => handleFuelTypeChange(index, "name", e.target.value)}
+                  placeholder="Fuel Type Name"
                   required
                 />
-              </div>
-
-              <div>
-                <Label htmlFor="email">Email</Label>
                 <Input
-                  id="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  placeholder="Enter station email"
-                  type="email"
+                  value={fuelType.price}
+                  onChange={(e) => handleFuelTypeChange(index, "price", e.target.value)}
+                  placeholder="Fuel Price"
                   required
                 />
-              </div>
-
-              <div>
-                <Label htmlFor="phone">Phone</Label>
                 <Input
-                  id="phone"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  placeholder="Enter station phone"
-                  type="tel"
+                  value={fuelType.quantity}
+                  onChange={(e) => handleFuelTypeChange(index, "quantity", e.target.value)}
+                  placeholder="Fuel Quantity"
                   required
                 />
-              </div>
-
-              <div>
-                <Label htmlFor="location">Location</Label>
-                <Input
-                  id="location"
-                  name="location"
-                  value={formData.location}
-                  onChange={handleChange}
-                  placeholder="Enter station location"
-                  required
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="imageUrl">Image URL (Optional)</Label>
-                <Input
-                  id="imageUrl"
-                  name="imageUrl"
-                  value={formData.imageUrl}
-                  onChange={handleChange}
-                  placeholder="Enter image URL (optional)"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="stock">Stock Status</Label>
-                <Select value={formData.stock} onValueChange={handleStockChange}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select stock status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="available">Available</SelectItem>
-                    <SelectItem value="outOfStock">Out of Stock</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <Separator className="my-6" />
-
-              <div>
-                <Label>Fuel Types</Label>
-                {formData.fuelTypes.map((fuelType, index) => (
-                  <div key={index} className="space-y-4">
-                    <div className="flex space-x-4">
-                      <Input
-                        value={fuelType.name}
-                        onChange={(e) => handleFuelTypeChange(index, "name", e.target.value)}
-                        placeholder="Fuel Type Name"
-                        required
-                      />
-                      <Input
-                        value={fuelType.price}
-                        onChange={(e) => handleFuelTypeChange(index, "price", e.target.value)}
-                        placeholder="Fuel Price"
-                        required
-                      />
-                      <Input
-                        value={fuelType.quantity}
-                        onChange={(e) => handleFuelTypeChange(index, "quantity", e.target.value)}
-                        placeholder="Fuel Quantity"
-                        required
-                      />
-                      <Button variant="destructive" onClick={() => handleRemoveFuelType(index)}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-                <Button variant="outline" className="mt-4 mb-5" onClick={handleAddFuelType}>
-                  <Plus className="h-4 w-4" />
-                  Add Fuel Type
+                <Button
+                  type="button"
+                  variant="destructive"
+                  onClick={() => handleRemoveFuelType(index)}
+                  disabled={formData.fuelTypes.length <= 1}
+                >
+                  <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
             </div>
-            <CardFooter>
-              <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    <span className="ml-2">Submitting...</span>
-                  </>
-                ) : (
-                  "Submit"
-                )}
-              </Button>
-            </CardFooter>
-          </form>
-        </CardContent>
-      </Card>
+          ))}
+          <Button type="button" variant="outline" className="mt-4" onClick={handleAddFuelType}>
+            <Plus className="h-4 w-4 mr-2" />
+            Add Fuel Type
+          </Button>
+        </div>
+
+        <div className="flex justify-end gap-2 mt-6">
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                Submitting...
+              </>
+            ) : (
+              "Register Fuel Station"
+            )}
+          </Button>
+        </div>
+      </form>
     </div>
   )
 }
-

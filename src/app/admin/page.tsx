@@ -21,7 +21,7 @@ export default function Dashboard() {
           <OverviewCards />
           <DataCharts />
           <DataTables />
-          <DashboardWidgets/>
+          {/* <DashboardWidgets/> */}
         </div>
       {/* </DashboardLayout> */}
     </div>

@@ -114,7 +114,7 @@ export function FuelStationsTable() {
 
   const handleDelete = async (stationId: string) => {
     try {
-      const response = await fetch(`http://localhost:8000/api/v1/stations/deleteStationById/${stationId}`, {
+      const response = await fetch(`http://localhost:8000/api/v1/fuelstations/deletelFuelStatinById/${stationId}`, {
         method: "DELETE",
       })
 

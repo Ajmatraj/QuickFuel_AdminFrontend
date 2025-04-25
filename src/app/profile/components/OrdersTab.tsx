@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from "@/components/ui/separator"
 import type { UserProfile } from "@/app/types/user"
 import { useRouter } from "next/navigation"
+import { ToastContainer } from "react-toastify"
 
 interface Order {
   _id: string
@@ -111,6 +112,95 @@ export default function OrdersTab({ user }: { user: UserProfile }) {
     router.push(`/orders/${orderId}`)
   }
 
+  const handleCanceled = async (orderId: string) => {
+    try {
+      setLoading(true);
+      setError(null);
+  
+      // Token extraction logic
+      const accessToken = localStorage.getItem("accessToken");
+      const userDetails = localStorage.getItem("userDetails");
+      const parsedUser = userDetails ? JSON.parse(userDetails) : null;
+      const token = accessToken || parsedUser?.token;
+  
+      if (!token) {
+        throw new Error("Authentication token not found");
+      }
+  
+      const response = await fetch(
+        `http://localhost:8000/api/v1/orders/cancelOrder/${orderId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+      let data;
+      try {
+        data = await response.json();
+      } catch (jsonErr) {
+        console.error("JSON parsing error:", jsonErr);
+        throw new Error("Invalid JSON response from server");
+      }
+  
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || "Failed to cancel order");
+      }
+  
+      console.log("Order cancelled:", data.data); // optional debug log
+      fetchOrders(); // Refresh the order list
+    } catch (err) {
+      console.error("❌ Error cancelling order:", err);
+      setError(err instanceof Error ? err.message : "An unknown error occurred");
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  
+  
+
+  const handleDelete = async (orderId: string) => {
+    try {
+      setLoading(true)
+      setError(null)
+  
+      const token =
+        localStorage.getItem("accessToken") ||
+        (localStorage.getItem("userDetails") && JSON.parse(localStorage.getItem("userDetails") || "{}").token)
+  
+      if (!token) {
+        throw new Error("Authentication token not found")
+      }
+  
+      const response = await fetch(`http://localhost:8000/api/v1/orders/deleteOrder/${orderId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      })
+  
+      if (!response.ok) {
+        throw new Error("Failed to delete order")
+      }
+  
+      const data = await response.json()
+  
+      if (data.success) {
+        fetchOrders()
+      } else {
+        throw new Error(data.message || "Error deleting order")
+      }
+    } catch (err) {
+      console.error("Error deleting order:", err)
+      setError(err instanceof Error ? err.message : "An unknown error occurred")
+    } finally {
+      setLoading(false)
+    }
+  }
+  
+
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center py-12">
@@ -144,6 +234,9 @@ export default function OrdersTab({ user }: { user: UserProfile }) {
   }
 
   return (
+    <>
+    <ToastContainer />
+
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h2 className="text-2xl font-bold tracking-tight">Your Orders</h2>
@@ -233,8 +326,25 @@ export default function OrdersTab({ user }: { user: UserProfile }) {
                     </div>
                   </div>
                 </CardContent>
-                <CardFooter>
+                <CardFooter className="flex justify-between items-center pt-2">
                   <Button onClick={() => handleViewDetails(order._id)}>View Details</Button>
+                  <div className="flex gap-2">
+                    {order.status !== "CANCELLED" && (
+                      <Button variant="destructive" onClick={() => handleCanceled(order._id)}>
+                        Cancel
+                      </Button>
+                    )}
+
+                    {order.status === "CANCELLED" && (
+                      <Button
+                        variant="ghost"
+                        className="text-red-600 hover:text-red-800"
+                        onClick={() => handleDelete(order._id)}
+                      >
+                        Delete
+                      </Button>
+                    )}
+                  </div>
                 </CardFooter>
               </Card>
             ))
@@ -248,5 +358,6 @@ export default function OrdersTab({ user }: { user: UserProfile }) {
         </TabsContent>
       </Tabs>
     </div>
+    </>
   )
 }
